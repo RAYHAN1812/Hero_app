@@ -1,0 +1,129 @@
+[
+  {
+    "image": "https://picsum.photos/seed/app1/400/400",
+    "title": "TaskFlow",
+    "companyName": "FlowTech Ltd",
+    "id": 1,
+    "description": "Manage tasks, deadlines, and projects with smart productivity insights.",
+    "size": 42,
+    "reviews": 1280,
+    "ratingAvg": 4.6,
+    "downloads": 50000,
+    "ratings": [
+      { "name": "1 star", "count": 100 },
+      { "name": "2 star", "count": 150 },
+      { "name": "3 star", "count": 300 },
+      { "name": "4 star", "count": 420 },
+      { "name": "5 star", "count": 310 }
+    ]
+  },
+  {
+    "image": "https://picsum.photos/seed/app2/400/400",
+    "title": "FitBuddy",
+    "companyName": "Wellbeing Apps",
+    "id": 2,
+    "description": "Track workouts and nutrition with AI-based fitness recommendations.",
+    "size": 55,
+    "reviews": 2210,
+    "ratingAvg": 4.8,
+    "downloads": 150000,
+    "ratings": [
+      { "name": "1 star", "count": 120 },
+      { "name": "2 star", "count": 90 },
+      { "name": "3 star", "count": 210 },
+      { "name": "4 star", "count": 540 },
+      { "name": "5 star", "count": 1250 }
+    ]
+  },
+  {
+    "image": "https://picsum.photos/seed/app3/400/400",
+    "title": "PhotoSnap",
+    "companyName": "Pixel Studios",
+    "id": 3,
+    "description": "Edit and share your photos with beautiful filters and instant effects.",
+    "size": 76,
+    "reviews": 3410,
+    "ratingAvg": 4.4,
+    "downloads": 250000,
+    "ratings": [
+      { "name": "1 star", "count": 250 },
+      { "name": "2 star", "count": 190 },
+      { "name": "3 star", "count": 600 },
+      { "name": "4 star", "count": 920 },
+      { "name": "5 star", "count": 1450 }
+    ]
+  },
+  {
+    "image": "https://picsum.photos/seed/app4/400/400",
+    "title": "NoteEase",
+    "companyName": "Paperless Labs",
+    "id": 4,
+    "description": "Create, organize, and sync notes seamlessly across all devices.",
+    "size": 38,
+    "reviews": 980,
+    "ratingAvg": 4.2,
+    "downloads": 85000,
+    "ratings": [
+      { "name": "1 star", "count": 60 },
+      { "name": "2 star", "count": 80 },
+      { "name": "3 star", "count": 200 },
+      { "name": "4 star", "count": 340 },
+      { "name": "5 star", "count": 300 }
+    ]
+  },
+  {
+    "image": "https://picsum.photos/seed/app5/400/400",
+    "title": "BudgetWise",
+    "companyName": "FinTech Pro",
+    "id": 5,
+    "description": "Plan budgets, control expenses, and save more with personalized insights.",
+    "size": 60,
+    "reviews": 4500,
+    "ratingAvg": 4.5,
+    "downloads": 340000,
+    "ratings": [
+      { "name": "1 star", "count": 300 },
+      { "name": "2 star", "count": 350 },
+      { "name": "3 star", "count": 500 },
+      { "name": "4 star", "count": 1200 },
+      { "name": "5 star", "count": 2150 }
+    ]
+  },
+  {
+    "image": "https://picsum.photos/seed/app6/400/400",
+    "title": "SoundWave",
+    "companyName": "EchoWorks",
+    "id": 6,
+    "description": "Stream music and podcasts with immersive sound and offline mode.",
+    "size": 90,
+    "reviews": 8120,
+    "ratingAvg": 4.7,
+    "downloads": 800000,
+    "ratings": [
+      { "name": "1 star", "count": 410 },
+      { "name": "2 star", "count": 290 },
+      { "name": "3 star", "count": 900 },
+      { "name": "4 star", "count": 2500 },
+      { "name": "5 star", "count": 4020 }
+    ]
+  },
+  {
+    "image": "https://picsum.photos/seed/app7/400/400",
+    "title": "TravelGo",
+    "companyName": "JetSmart",
+    "id": 7,
+    "description": "Book flights, hotels, and trips worldwide with one easy app.",
+    "size": 78,
+    "reviews": 2310,
+    "ratingAvg": 4.3,
+    "downloads": 300000,
+    "ratings": [
+      { "name": "1 star", "count": 150 },
+      { "name": "2 star", "count": 180 },
+      { "name": "3 star", "count": 390 },
+      { "name": "4 star", "count": 780 },
+      { "name": "5 star", "count": 810 }
+    ]
+  }
+ 
+]
