@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Apple, Play, Download, Star, Zap, CheckCircle, Power, Clock, Trello, Plane, Gauge, Search, Trash2, Sliders, X, Loader, Home as HomeIcon, List } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+// Importing all necessary icons from lucide-react
+import { Apple, Play, Download, Star, Zap, CheckCircle, Power, Clock, Trello, Plane, Gauge, Search, Trash2, Sliders, X, Loader, Home as HomeIcon, List, CornerUpLeft } from 'lucide-react';
+
+// --- MOCK COMPONENTS (PROVIDED AS-IS) ---
 
 const ResponsiveContainer = ({ children, width = '100%', height = 300 }) => (
   <div style={{ width, height, margin: '0 auto' }}>{children}</div>
@@ -78,12 +81,15 @@ const ToastComponent = ({ toast, setToast }) => {
   );
 };
 
+// --- STORAGE & DATA UTILITIES ---
+
 const STORAGE_KEY = 'heroio_installed_apps';
 
 const getInstalledApps = () => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    // Returns an array of app IDs (numbers)
+    return data ? JSON.parse(data).map(Number) : []; 
   } catch (error) {
     console.error("Error reading localStorage:", error);
     return [];
@@ -92,6 +98,7 @@ const getInstalledApps = () => {
 
 const saveInstalledApps = (apps) => {
   try {
+    // Stores an array of app IDs
     localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
   } catch (error) {
     console.error("Error writing to localStorage:", error);
@@ -244,6 +251,8 @@ const AppsData = [
     "reviewData": [{ name: 'Jan', value: 10000 }, { name: 'Feb', value: 12000 }, { name: 'Mar', value: 11000 }, { name: 'Apr', value: 13000 }, { name: 'May', value: 14000 }, { name: 'Jun', value: 15000 }],
   }
 ];
+
+// --- CORE UTILITY COMPONENTS ---
 
 const StoreButton = ({ icon: Icon, text, link }) => (
     <a
@@ -403,6 +412,7 @@ const NavbarComponent = ({ currentPath, onNavigate, installedCount }) => {
 
 
   const NavButton = ({ targetPath, label, isMobile = false, icon: Icon, showCount = false }) => {
+    // Check if the currentPath starts with the targetPath to determine active state.
     const isActive = currentPath.startsWith(targetPath);
     const linkClasses = isMobile 
         ? `${mobileLinkClass} ${isActive ? mobileActiveLinkClass : mobileInactiveLinkClass}`
@@ -526,6 +536,7 @@ const NoResults = ({ message = "No applications found matching your criteria." }
   </div>
 );
 
+// --- ROUTE COMPONENTS ---
 
 const HomeContent = ({ onNavigate, appsData, installedApps, onInstall, isLoading }) => {
     const appStoreLink = "https://www.apple.com/app-store/";
@@ -654,14 +665,14 @@ const AppsPage = ({ appsData, installedApps, onNavigate, onInstall, isLoading })
     const [isSearching, setIsSearching] = useState(false);
 
     const filteredAndSortedApps = useMemo(() => {
-        const filtered = appsData.filter(app =>
+        let filtered = appsData.filter(app =>
             app.title.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
         if (sortBy === 'high-low') {
-            return filtered.sort((a, b) => b.downloads - a.downloads);
+            filtered = filtered.sort((a, b) => b.downloads - a.downloads);
         } else if (sortBy === 'low-high') {
-            return filtered.sort((a, b) => a.downloads - b.downloads);
+            filtered = filtered.sort((a, b) => a.downloads - b.downloads);
         }
         return filtered;
     }, [appsData, searchTerm, sortBy]);
@@ -700,31 +711,30 @@ const AppsPage = ({ appsData, installedApps, onNavigate, onInstall, isLoading })
                           placeholder="Search apps..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-inner transition duration-150"
+                          className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                       />
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      {isSearching && (
+                        <Loader className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-500 animate-spin" />
+                      )}
                   </div>
                   
                   <div className="relative">
                       <select
                           value={sortBy}
                           onChange={(e) => setSortBy(e.target.value)}
-                          className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-xl leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 shadow-inner transition duration-150"
+                          className="appearance-none w-full md:w-40 pl-3 pr-8 py-2 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 shadow-sm text-sm"
                       >
-                          <option value="none">Sort By</option>
+                          <option value="none">Sort by Default</option>
                           <option value="high-low">Downloads (High to Low)</option>
                           <option value="low-high">Downloads (Low to High)</option>
                       </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                          <Sliders className="w-4 h-4" />
-                      </div>
+                      <Sliders className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
               </div>
           </div>
-          
-          {isSearching ? (
-            <LoadingIndicator text="Searching..." />
-          ) : filteredAndSortedApps.length > 0 ? (
+
+          {filteredAndSortedApps.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {filteredAndSortedApps.map(app => (
                       <AppCard 
@@ -744,146 +754,125 @@ const AppsPage = ({ appsData, installedApps, onNavigate, onInstall, isLoading })
     );
 };
 
-const AppDetailsPage = ({ appId, appsData, onNavigate, onInstall, isInstalled, isLoading }) => {
-    const app = appsData.find(a => a.id === parseInt(appId));
-    const appStoreLink = "https://www.apple.com/app-store/";
-    const playStoreLink = "https://play.google.com/store";
+const AppDetailsPage = ({ appsData, onNavigate, onInstall, onUninstall, installedApps, path }) => {
+    // Extract ID from path. Example: 'details/1' -> '1'
+    const appIdMatch = path.match(/details\/(\d+)/);
+    const appId = appIdMatch ? parseInt(appIdMatch[1], 10) : null;
+    const app = appsData.find(a => a.id === appId);
+    const isInstalled = installedApps.includes(appId);
 
-    if (isLoading) return <LoadingIndicator text="Fetching app details..." />;
     if (!app) {
         return (
-            <div className="p-10 text-center">
-                <h1 className="text-3xl font-bold text-red-500">App Not Found</h1>
-                <p className="mt-4 text-gray-600">The requested application could not be located in our store.</p>
+            <div className="pt-20 pb-8 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 className="text-4xl font-extrabold text-red-600 mb-4">404 App Not Found</h1>
+                <p className="text-lg text-gray-600">The application you are looking for does not exist or the URL is incorrect.</p>
                 <button
                     onClick={() => onNavigate('apps')}
-                    className="mt-6 text-indigo-600 hover:text-indigo-800 font-medium flex items-center justify-center mx-auto"
+                    className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 shadow-xl hover:bg-indigo-700 transition duration-300"
                 >
-                    &larr; Back to App Store
+                    <CornerUpLeft className="w-5 h-5 mr-2" /> Back to App Store
                 </button>
             </div>
         );
     }
-
-    const FeaturesList = () => (
-        <ul className="space-y-4">
-            <li className="flex items-center text-gray-700">
-                <CheckCircle className="w-5 h-5 text-indigo-500 mr-3 flex-shrink-0" />
-                Real-time Sync Across All Devices
-            </li>
-            <li className="flex items-center text-gray-700">
-                <CheckCircle className="w-5 h-5 text-indigo-500 mr-3 flex-shrink-0" />
-                Offline Mode for Uninterrupted Access
-            </li>
-            <li className="flex items-center text-gray-700">
-                <CheckCircle className="w-5 h-5 text-indigo-500 mr-3 flex-shrink-0" />
-                24/7 Priority Customer Support
-            </li>
-            <li className="flex items-center text-gray-700">
-                <CheckCircle className="w-5 h-5 text-indigo-500 mr-3 flex-shrink-0" />
-                Secure Data Encryption
-            </li>
-            <li className="flex items-center text-gray-700">
-                <CheckCircle className="w-5 h-5 text-indigo-500 mr-3 flex-shrink-0" />
-                Regular Feature Updates
-            </li>
-        </ul>
-    );
+    
+    const handleAction = () => {
+        if (isInstalled) {
+            onUninstall(app.id);
+        } else {
+            onInstall(app);
+        }
+    };
 
     return (
-        <div className="pt-12 pb-8 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="pt-12 pb-16 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <button
                 onClick={() => onNavigate('apps')}
-                className="text-indigo-600 hover:text-indigo-800 font-medium mb-8 flex items-center transition duration-150"
+                className="flex items-center text-indigo-600 font-semibold mb-8 hover:text-indigo-800 transition duration-200"
             >
-                &larr; Back to App Store
+                <CornerUpLeft className="w-4 h-4 mr-1" /> Back to App Store
             </button>
 
-            <div className="bg-white p-6 md:p-10 rounded-2xl shadow-2xl border border-gray-100">
-                <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8 mb-8 pb-8 border-b border-gray-100">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-10">
+                <div className="flex flex-col md:flex-row md:space-x-8">
                     <img
                         src={app.image}
                         alt={`${app.title} icon`}
-                        className="w-24 h-24 rounded-3xl object-cover shadow-xl flex-shrink-0"
-                        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/2563EB/ffffff?text=App"; }}
+                        className="flex-shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-3xl object-cover shadow-xl mb-6 md:mb-0"
                     />
-                    <div>
-                        <h1 className="text-4xl font-extrabold text-gray-900">{app.title}</h1>
+                    <div className="flex-grow">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">{app.title}</h1>
                         <p className="text-xl text-indigo-600 font-medium mt-1">{app.companyName}</p>
-                        <div className="flex items-center mt-3 space-x-4 text-gray-600">
-                            <div className='flex items-center'>
+                        
+                        <div className='flex items-center mt-3 space-x-4'>
+                            <div className="flex flex-col items-center">
                                 {renderStars(app.ratingAvg)}
-                                <span className="ml-2 font-semibold text-gray-800">{app.ratingAvg.toFixed(1)}</span>
+                                <span className="text-sm text-gray-500 mt-1">{app.reviews.toLocaleString()} Reviews</span>
                             </div>
-                            <span>|</span>
-                            <span>{app.reviews.toLocaleString()} Reviews</span>
+                            <div className='w-px h-10 bg-gray-200'></div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-gray-800">{app.ratingAvg.toFixed(1)}</p>
+                                <p className="text-sm text-gray-500">Rating</p>
+                            </div>
+                            <div className='w-px h-10 bg-gray-200'></div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-gray-800">{formatDownloads(app.downloads)}</p>
+                                <p className="text-sm text-gray-500">Downloads</p>
+                            </div>
                         </div>
+
+                        <button
+                            onClick={handleAction}
+                            className={`mt-6 px-8 py-3 rounded-full text-base font-semibold transition duration-200 shadow-lg hover:shadow-xl transform active:scale-95
+                                ${isInstalled
+                                    ? 'bg-red-500 text-white hover:bg-red-600'
+                                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                }
+                            `}
+                        >
+                            {isInstalled ? (
+                                <span className='flex items-center justify-center'>
+                                    <Trash2 className="w-5 h-5 mr-2" /> Uninstall App
+                                </span>
+                            ) : (
+                                <span className='flex items-center justify-center'>
+                                    <Download className="w-5 h-5 mr-2" /> Get App ({app.size} MB)
+                                </span>
+                            )}
+                        </button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    <div className="lg:col-span-2">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">About This App</h2>
-                        <p className="text-gray-700 leading-relaxed mb-8">{app.description}</p>
-
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Key Features</h3>
-                        <FeaturesList />
-
-                        <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Review Trend</h3>
+                <div className="mt-10 border-t border-gray-100 pt-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">About This App</h2>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{app.description}</p>
+                </div>
+                
+                <div className="mt-10 border-t border-gray-100 pt-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Review Trend</h2>
+                    <LineChart>
+                        {/* Mock Recharts visualization */}
                         <ChartPlaceholder data={app.reviewData} />
-                    </div>
-
-                    <div className="lg:col-span-1 bg-gray-50 p-6 rounded-xl shadow-inner border border-gray-200">
-                        <div className="space-y-4">
-                            <StatPill label="Downloads" value={formatDownloads(app.downloads)} icon={Download} />
-                            <StatPill label="App Size" value={`${app.size} MB`} icon={Gauge} />
-                        </div>
-
-                        <div className="mt-8 pt-6 border-t border-gray-200">
-                            <button
-                                onClick={() => onInstall(app)}
-                                disabled={isInstalled}
-                                className={`w-full py-3 rounded-xl text-lg font-bold transition duration-200 shadow-lg transform active:scale-95 mb-4
-                                    ${isInstalled 
-                                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                        : 'bg-green-600 text-white hover:bg-green-700'
-                                    }
-                                `}
-                            >
-                                {isInstalled ? 'Installed' : 'Install Now'}
-                            </button>
-                            <div className='flex justify-center gap-4'>
-                                <StoreButton icon={Play} text="Google Play" link={playStoreLink} />
-                                <StoreButton icon={Apple} text="App Store" link={appStoreLink} />
-                            </div>
-                        </div>
-                    </div>
+                    </LineChart>
                 </div>
             </div>
         </div>
     );
 };
 
-const InstalledPage = ({ installedApps, appsData, onNavigate, onUninstall, isLoading }) => {
-    
+const MyInstallationPage = ({ installedApps, appsData, onUninstall }) => {
+    // Filter the full data set to get only the installed apps
     const installedAppData = useMemo(() => {
-        return appsData.filter(app => installedApps.includes(app.id));
-    }, [appsData, installedApps]);
-
-    if (isLoading) {
-        return <LoadingIndicator text="Checking installed applications..." />;
-    }
+        const appMap = new Map(appsData.map(app => [app.id, app]));
+        return installedApps.map(id => appMap.get(id)).filter(app => app);
+    }, [installedApps, appsData]);
 
     return (
         <div className="pt-12 pb-8 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-                <h1 className="text-4xl font-extrabold text-gray-900 mb-2">My Installation Manager</h1>
-                <p className="text-lg text-gray-600 max-w-3xl mx-auto">Manage all applications currently installed on your HERO.IO device. Uninstall apps you no longer need.</p>
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-2">My Installations</h1>
+                <p className="text-lg text-gray-600 max-w-3xl mx-auto">Manage the apps you've installed from HERO.IO. Total installed apps: <span className='font-bold text-indigo-600'>{installedAppData.length}</span></p>
             </div>
-
-            <p className="text-xl font-semibold text-gray-700 mb-6">
-                Total Installed Apps: <span className="text-indigo-600">{installedAppData.length}</span>
-            </p>
 
             {installedAppData.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -891,134 +880,156 @@ const InstalledPage = ({ installedApps, appsData, onNavigate, onUninstall, isLoa
                         <AppCard
                             key={app.id}
                             app={app}
-                            onNavigate={onNavigate}
+                            // Note: onNavigate is disabled on this page by not passing it
                             onUninstall={onUninstall}
-                            isInstalledPage={true}
+                            isInstalledPage={true} // Toggles the button text to Uninstall
                         />
                     ))}
                 </div>
             ) : (
-                <NoResults message="You currently have no apps installed." />
+                <NoResults message="You don't have any apps installed yet." />
             )}
-
         </div>
     );
 };
 
-const StatPill = ({ label, value, icon: Icon }) => (
-    <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100">
-        <div className="flex items-center space-x-3">
-            <Icon className="w-5 h-5 text-indigo-500" />
-            <span className="text-sm font-medium text-gray-600">{label}</span>
-        </div>
-        <span className="text-lg font-bold text-gray-900">{value}</span>
-    </div>
-);
-
+// --- MAIN APPLICATION COMPONENT (ROUTER) ---
 
 const App = () => {
-  const [currentPath, setCurrentPath] = useState('home'); 
-  const [installedApps, setInstalledApps] = useState([]);
-  const [toast, setToast] = useState({ message: '', type: '' });
-  const [isLoading, setIsLoading] = useState(true);
+    // 1. ROUTING SETUP: Uses the URL path on initial load for proper routing on refresh
+    // window.location.pathname is '/home', '/apps', '/details/1', etc.
+    // .substring(1) removes the leading '/' to get 'home', 'apps', 'details/1'
+    const initialPath = window.location.pathname.substring(1) || 'home';
+    const [currentPath, setCurrentPath] = useState(initialPath);
+    const [installedApps, setInstalledApps] = useState(getInstalledApps);
+    const [toast, setToast] = useState({ message: '', type: '' });
+    const [isLoading, setIsLoading] = useState(false); // Mock loading state
 
-  useEffect(() => {
-    // Simulate loading time and fetch installed apps from local storage
-    setTimeout(() => {
-      const storedApps = getInstalledApps();
-      setInstalledApps(storedApps);
-      setIsLoading(false);
-    }, 500);
-  }, []);
+    // 2. URL and State Synchronization
+    const onNavigate = useCallback((path) => {
+        // Update URL using History API
+        window.history.pushState(null, '', `/${path}`);
+        // Update state to trigger re-render of the appropriate component
+        setCurrentPath(path);
+    }, []);
 
-  const onNavigate = (path) => {
-    setCurrentPath(path);
-    window.scrollTo(0, 0);
-  };
+    // Handle browser back/forward buttons (popstate event)
+    useEffect(() => {
+        const handlePopState = () => {
+            // This is crucial for handling browser history navigation
+            setCurrentPath(window.location.pathname.substring(1) || 'home');
+        };
 
-  const onInstall = (app) => {
-    if (!installedApps.includes(app.id)) {
-      const newInstalledApps = [...installedApps, app.id];
-      setInstalledApps(newInstalledApps);
-      saveInstalledApps(newInstalledApps);
-      setToast({ message: `${app.title} installed successfully!`, type: 'success' });
-    }
-  };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
 
-  const onUninstall = (appId) => {
-    const app = AppsData.find(a => a.id === appId);
-    if (!app) return;
+    // 3. App Installation Logic
+    const handleInstall = (app) => {
+        if (!installedApps.includes(app.id)) {
+            const newInstalledApps = [...installedApps, app.id];
+            setInstalledApps(newInstalledApps);
+            saveInstalledApps(newInstalledApps);
+            setToast({ message: `${app.title} installed successfully!`, type: 'success' });
+        }
+    };
 
-    const newInstalledApps = installedApps.filter(id => id !== appId);
-    setInstalledApps(newInstalledApps);
-    saveInstalledApps(newInstalledApps);
-    setToast({ message: `${app.title} uninstalled.`, type: 'error' });
-  };
+    // 4. App Uninstallation Logic
+    const handleUninstall = (appId) => {
+        const app = AppsData.find(a => a.id === appId);
+        const newInstalledApps = installedApps.filter(id => id !== appId);
+        setInstalledApps(newInstalledApps);
+        saveInstalledApps(newInstalledApps);
+        setToast({ message: `${app.title} uninstalled.`, type: 'error' });
+    };
 
-  const renderContent = () => {
-    const pathParts = currentPath.split('/');
-    const page = pathParts[0];
+    // 5. Route Rendering Logic
+    const renderContent = () => {
+        if (currentPath === 'home' || currentPath === '') {
+            return (
+                <HomeContent 
+                    onNavigate={onNavigate} 
+                    appsData={AppsData} 
+                    installedApps={installedApps} 
+                    onInstall={handleInstall} 
+                    isLoading={isLoading} 
+                />
+            );
+        }
+        if (currentPath === 'apps') {
+            return (
+                <AppsPage 
+                    onNavigate={onNavigate} 
+                    appsData={AppsData} 
+                    installedApps={installedApps} 
+                    onInstall={handleInstall} 
+                    isLoading={isLoading} 
+                />
+            );
+        }
+        if (currentPath === 'myinstall') {
+            return (
+                <MyInstallationPage 
+                    appsData={AppsData} 
+                    installedApps={installedApps} 
+                    onUninstall={handleUninstall} 
+                />
+            );
+        }
+        // Handle Details Route: Starts with 'details/'
+        if (currentPath.startsWith('details/')) {
+            return (
+                <AppDetailsPage 
+                    path={currentPath} // Pass the full path to extract ID
+                    onNavigate={onNavigate} 
+                    appsData={AppsData} 
+                    installedApps={installedApps} 
+                    onInstall={handleInstall} 
+                    onUninstall={handleUninstall} 
+                />
+            );
+        }
 
-    switch (page) {
-      case 'home':
-        return <HomeContent 
-          onNavigate={onNavigate} 
-          appsData={AppsData} 
-          installedApps={installedApps}
-          onInstall={onInstall}
-          isLoading={isLoading}
-        />;
-      case 'apps':
-        return <AppsPage 
-          appsData={AppsData} 
-          installedApps={installedApps} 
-          onNavigate={onNavigate} 
-          onInstall={onInstall} 
-          isLoading={isLoading}
-        />;
-      case 'details':
-        const appId = pathParts[1];
-        const isAppInstalled = installedApps.includes(parseInt(appId));
-        return <AppDetailsPage 
-          appId={appId} 
-          appsData={AppsData} 
-          onNavigate={onNavigate} 
-          onInstall={onInstall} 
-          isInstalled={isAppInstalled}
-          isLoading={isLoading}
-        />;
-      case 'myinstall':
-        return <InstalledPage
-          installedApps={installedApps}
-          appsData={AppsData}
-          onNavigate={onNavigate}
-          onUninstall={onUninstall}
-          isLoading={isLoading}
-        />;
-      default:
-        return <HomeContent onNavigate={onNavigate} appsData={AppsData} installedApps={installedApps} onInstall={onInstall} isLoading={isLoading} />;
-    }
-  };
+        // 404 Not Found Page for invalid routes
+        return (
+            <div className="pt-20 pb-8 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 className="text-4xl font-extrabold text-red-600 mb-4">404 Page Not Found</h1>
+                <p className="text-lg text-gray-600">The URL you requested does not match any route in the application.</p>
+                <button
+                    onClick={() => onNavigate('home')}
+                    className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 shadow-xl hover:bg-indigo-700 transition duration-300"
+                >
+                    <CornerUpLeft className="w-5 h-5 mr-2" /> Go to Homepage
+                </button>
+            </div>
+        );
+    };
 
-  return (
-    <div className="min-h-screen bg-gray-50 antialiased">
-      <NavbarComponent 
-        currentPath={currentPath} 
-        onNavigate={onNavigate} 
-        installedCount={installedApps.length} 
-      />
-      <main>
-        {renderContent()}
-      </main>
-      <ToastComponent toast={toast} setToast={setToast} />
-      <footer className="w-full bg-gray-900 py-6 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-          <p>&copy; 2025 HERO.IO. All rights reserved.</p>
-          <p className="mt-1">Built with React and Tailwind CSS for the modern developer.</p>
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Navbar component is aware of the current path and handles navigation */}
+            <NavbarComponent 
+                currentPath={currentPath} 
+                onNavigate={onNavigate} 
+                installedCount={installedApps.length} 
+            />
+            
+            <main>
+                {/* Render the content based on the current application path */}
+                {renderContent()}
+            </main>
+
+            {/* Toast component for feedback */}
+            <ToastComponent toast={toast} setToast={setToast} />
+
+            <footer className="w-full bg-gray-100 py-6 mt-12 border-t border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+                    &copy; {new Date().getFullYear()} HERO.IO. All rights reserved. | Simple SPA Router Mockup.
+                </div>
+            </footer>
         </div>
-      </footer>
-    </div>
-  );
+    );
 };
 
 export default App;
