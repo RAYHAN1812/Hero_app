@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-// Importing all necessary icons from lucide-react
 import { Apple, Play, Download, Star, Zap, CheckCircle, Power, Clock, Trello, Plane, Gauge, Search, Trash2, Sliders, X, Loader, Home as HomeIcon, List, CornerUpLeft } from 'lucide-react';
 
-// --- MOCK COMPONENTS (PROVIDED AS-IS) ---
 
 const ResponsiveContainer = ({ children, width = '100%', height = 300 }) => (
   <div style={{ width, height, margin: '0 auto' }}>{children}</div>
@@ -81,14 +79,12 @@ const ToastComponent = ({ toast, setToast }) => {
   );
 };
 
-// --- STORAGE & DATA UTILITIES ---
 
 const STORAGE_KEY = 'heroio_installed_apps';
 
 const getInstalledApps = () => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    // Returns an array of app IDs (numbers)
     return data ? JSON.parse(data).map(Number) : []; 
   } catch (error) {
     console.error("Error reading localStorage:", error);
@@ -98,7 +94,6 @@ const getInstalledApps = () => {
 
 const saveInstalledApps = (apps) => {
   try {
-    // Stores an array of app IDs
     localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
   } catch (error) {
     console.error("Error writing to localStorage:", error);
@@ -252,7 +247,6 @@ const AppsData = [
   }
 ];
 
-// --- CORE UTILITY COMPONENTS ---
 
 const StoreButton = ({ icon: Icon, text, link }) => (
     <a
@@ -412,7 +406,6 @@ const NavbarComponent = ({ currentPath, onNavigate, installedCount }) => {
 
 
   const NavButton = ({ targetPath, label, isMobile = false, icon: Icon, showCount = false }) => {
-    // Check if the currentPath starts with the targetPath to determine active state.
     const isActive = currentPath.startsWith(targetPath);
     const linkClasses = isMobile 
         ? `${mobileLinkClass} ${isActive ? mobileActiveLinkClass : mobileInactiveLinkClass}`
@@ -444,7 +437,6 @@ const NavbarComponent = ({ currentPath, onNavigate, installedCount }) => {
               className="flex items-center"
             >
              <img
-             // Logo placeholder
              src="https://placehold.co/32x32/6366f1/ffffff?text=L"
              alt="HERO.IO Logo"
              className="w-8 h-8 rounded-lg"
@@ -536,7 +528,6 @@ const NoResults = ({ message = "No applications found matching your criteria." }
   </div>
 );
 
-// --- ROUTE COMPONENTS ---
 
 const HomeContent = ({ onNavigate, appsData, installedApps, onInstall, isLoading }) => {
     const appStoreLink = "https://www.apple.com/app-store/";
@@ -755,7 +746,6 @@ const AppsPage = ({ appsData, installedApps, onNavigate, onInstall, isLoading })
 };
 
 const AppDetailsPage = ({ appsData, onNavigate, onInstall, onUninstall, installedApps, path }) => {
-    // Extract ID from path. Example: 'details/1' -> '1'
     const appIdMatch = path.match(/details\/(\d+)/);
     const appId = appIdMatch ? parseInt(appIdMatch[1], 10) : null;
     const app = appsData.find(a => a.id === appId);
@@ -851,7 +841,6 @@ const AppDetailsPage = ({ appsData, onNavigate, onInstall, onUninstall, installe
                 <div className="mt-10 border-t border-gray-100 pt-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Review Trend</h2>
                     <LineChart>
-                        {/* Mock Recharts visualization */}
                         <ChartPlaceholder data={app.reviewData} />
                     </LineChart>
                 </div>
@@ -861,7 +850,6 @@ const AppDetailsPage = ({ appsData, onNavigate, onInstall, onUninstall, installe
 };
 
 const MyInstallationPage = ({ installedApps, appsData, onUninstall }) => {
-    // Filter the full data set to get only the installed apps
     const installedAppData = useMemo(() => {
         const appMap = new Map(appsData.map(app => [app.id, app]));
         return installedApps.map(id => appMap.get(id)).filter(app => app);
@@ -880,9 +868,8 @@ const MyInstallationPage = ({ installedApps, appsData, onUninstall }) => {
                         <AppCard
                             key={app.id}
                             app={app}
-                            // Note: onNavigate is disabled on this page by not passing it
                             onUninstall={onUninstall}
-                            isInstalledPage={true} // Toggles the button text to Uninstall
+                            isInstalledPage={true} 
                         />
                     ))}
                 </div>
@@ -893,30 +880,24 @@ const MyInstallationPage = ({ installedApps, appsData, onUninstall }) => {
     );
 };
 
-// --- MAIN APPLICATION COMPONENT (ROUTER) ---
 
 const App = () => {
-    // 1. ROUTING SETUP: Uses the URL path on initial load for proper routing on refresh
-    // window.location.pathname is '/home', '/apps', '/details/1', etc.
-    // .substring(1) removes the leading '/' to get 'home', 'apps', 'details/1'
+    
     const initialPath = window.location.pathname.substring(1) || 'home';
     const [currentPath, setCurrentPath] = useState(initialPath);
     const [installedApps, setInstalledApps] = useState(getInstalledApps);
     const [toast, setToast] = useState({ message: '', type: '' });
-    const [isLoading, setIsLoading] = useState(false); // Mock loading state
-
-    // 2. URL and State Synchronization
+    const [isLoading, setIsLoading] = useState(false); 
     const onNavigate = useCallback((path) => {
-        // Update URL using History API
         window.history.pushState(null, '', `/${path}`);
-        // Update state to trigger re-render of the appropriate component
+        
         setCurrentPath(path);
     }, []);
 
-    // Handle browser back/forward buttons (popstate event)
+    
     useEffect(() => {
         const handlePopState = () => {
-            // This is crucial for handling browser history navigation
+            
             setCurrentPath(window.location.pathname.substring(1) || 'home');
         };
 
@@ -924,7 +905,6 @@ const App = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
-    // 3. App Installation Logic
     const handleInstall = (app) => {
         if (!installedApps.includes(app.id)) {
             const newInstalledApps = [...installedApps, app.id];
@@ -934,7 +914,6 @@ const App = () => {
         }
     };
 
-    // 4. App Uninstallation Logic
     const handleUninstall = (appId) => {
         const app = AppsData.find(a => a.id === appId);
         const newInstalledApps = installedApps.filter(id => id !== appId);
@@ -943,7 +922,6 @@ const App = () => {
         setToast({ message: `${app.title} uninstalled.`, type: 'error' });
     };
 
-    // 5. Route Rendering Logic
     const renderContent = () => {
         if (currentPath === 'home' || currentPath === '') {
             return (
@@ -976,11 +954,10 @@ const App = () => {
                 />
             );
         }
-        // Handle Details Route: Starts with 'details/'
         if (currentPath.startsWith('details/')) {
             return (
                 <AppDetailsPage 
-                    path={currentPath} // Pass the full path to extract ID
+                    path={currentPath} 
                     onNavigate={onNavigate} 
                     appsData={AppsData} 
                     installedApps={installedApps} 
@@ -990,7 +967,6 @@ const App = () => {
             );
         }
 
-        // 404 Not Found Page for invalid routes
         return (
             <div className="pt-20 pb-8 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h1 className="text-4xl font-extrabold text-red-600 mb-4">404 Page Not Found</h1>
@@ -1008,7 +984,6 @@ const App = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Navbar component is aware of the current path and handles navigation */}
             <NavbarComponent 
                 currentPath={currentPath} 
                 onNavigate={onNavigate} 
@@ -1016,11 +991,9 @@ const App = () => {
             />
             
             <main>
-                {/* Render the content based on the current application path */}
                 {renderContent()}
             </main>
 
-            {/* Toast component for feedback */}
             <ToastComponent toast={toast} setToast={setToast} />
 
             <footer className="w-full bg-gray-100 py-6 mt-12 border-t border-gray-200">
